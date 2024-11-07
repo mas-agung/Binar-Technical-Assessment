@@ -1,0 +1,413 @@
+openapi: 3.1.0
+info:
+  title: XYZ Mobile Loans API
+  description: "API for managing mobile loan applications, approvals, and repayments."
+  version: 1.0.0
+servers:
+- url: https://api.xyzloans.com
+  description: Production server
+- url: https://staging.api.xyzloans.com
+  description: Staging server
+tags:
+- name: Account
+  description: Operations related to user account
+- name: Loan
+  description: Operations related to loan applications
+paths:
+  /users/register:
+    post:
+      tags:
+      - Account
+      summary: Register a new user
+      description: Registers a new user in the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userName:
+                  type: string
+                  example: johndoe
+                email:
+                  type: string
+                  format: email
+                  example: johndoe@example.com
+                phoneNumber:
+                  type: string
+                  example: "089675341278"
+                password:
+                  type: string
+                  format: password
+                  example: P@ssw0rd123
+              required:
+              - userName
+              - email
+              - password
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully
+        "400":
+          description: Bad request
+        "503":
+          description: Service Unavailable
+  /users/login:
+    post:
+      tags:
+      - Account
+      summary: User login
+      description: Authenticates a user and provides a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userName:
+                  type: string
+                  example: johndoe
+                password:
+                  type: string
+                  format: password
+                  example: P@ssw0rd123
+              required:
+              - userName
+              - password
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login success
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwIiwidXNlck5hbWUiOiJKb2huIERvZSIsImV4cCI6MTUxNjIzOTAyMn0.Etrv5XCJwY_CTynAV5vHQrebecT1WPpJGHAlsE14CLw
+        "400":
+          description: Invalid user data
+        "503":
+          description: Service Unavailable
+  /users/profile:
+    get:
+      tags:
+      - Account
+      summary: Get user profile
+      description: Retrieves the profile of the authenticated user.
+      security:
+      - BearerAuth: []
+      responses:
+        "200":
+          description: Profile information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                    example: user_12345
+                  userName:
+                    type: string
+                    example: johndoe
+                  email:
+                    type: string
+                    example: johndoe@example.com
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: 2024-11-06T14:00:00Z
+        "401":
+          description: Unauthorized - Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid credentials
+        "503":
+          description: Service Unavailable
+  /v1/loans:
+    post:
+      tags:
+      - Loan
+      summary: Apply for a new loan
+      description: Submits a new loan application.
+      security:
+      - BearerAuth: []
+      requestBody:
+        description: Loan application details
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  example: user_12345
+                amount:
+                  type: number
+                  format: float
+                  example: 5000000
+                termMonths:
+                  type: integer
+                  example: 12
+                purpose:
+                  type: string
+                  example: Menyekolahkan Anak
+      responses:
+        "201":
+          description: Loan application submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  loanId:
+                    type: string
+                    example: loan_54321
+                  status:
+                    type: string
+                    example: Pending
+        "400":
+          description: Invalid application data
+        "401":
+          description: Unauthorized - Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid credentials
+        "503":
+          description: Service Unavailable
+  /v1/loans/{loanId}:
+    get:
+      tags:
+      - Loan
+      summary: Get loan application status
+      description: Retrieves the current status of a loan application.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: loanId
+        in: path
+        required: true
+        description: ID of the loan application
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Loan application status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  loanId:
+                    type: string
+                    example: loan_54321
+                  status:
+                    type: string
+                    example: Approved
+                  amount:
+                    type: number
+                    format: float
+                    example: 5000000
+                  termMonths:
+                    type: integer
+                    example: 12
+                  nextInstallmentSchedule:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        dueDate:
+                          type: string
+                          format: date
+                          example: 2024-12-01
+                        amountDue:
+                          type: number
+                          format: float
+                          example: 416.666.67
+        "401":
+          description: Unauthorized - Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid credentials
+        "404":
+          description: Loan application not found
+        "503":
+          description: Service Unavailable
+  /v1/loans/approval/{loanId}:
+    put:
+      tags:
+      - Loan
+      summary: Approve or reject a loan application
+      description: Approves or rejects a loan application by a loan officer.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: loanId
+        in: path
+        required: true
+        description: ID of the loan application to approve or reject
+        schema:
+          type: string
+      requestBody:
+        description: Approval decision
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approved:
+                  type: boolean
+                  example: true
+                approvedBy:
+                  type: string
+                  example: officer_123
+                notes:
+                  type: string
+                  example: Approved with special conditions
+      responses:
+        "200":
+          description: Loan application decision recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  loanId:
+                    type: string
+                    example: loan_98765
+                  status:
+                    type: string
+                    example: Approved
+        "401":
+          description: Unauthorized - Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid credentials
+        "404":
+          description: Loan application not found
+        "503":
+          description: Service Unavailable
+  /v1/loans/installment_payment/{loanId}:
+    post:
+      tags:
+      - Loan
+      summary: Make a loan repayment
+      description: Records a installment payment made toward a loan.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: loanId
+        in: path
+        required: true
+        description: ID of the loan being repaid
+        schema:
+          type: string
+      requestBody:
+        description: Installment details
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paymentUniqueId:
+                  type: string
+                  example: "aHv2&3,B"
+                amountPaid:
+                  type: number
+                  format: float
+                  example: 500000
+                paymentDate:
+                  type: string
+                  format: date
+                  example: 2024-11-06
+                paymentMethod:
+                  type: string
+                  example: Bank Transfer
+              required:
+              - paymentUniqueId
+              - amountPaid
+              - paymentDate
+              - paymentMethod
+      responses:
+        "200":
+          description: Installment payment recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  loanId:
+                    type: string
+                    example: loan_54321
+                  remainingBalance:
+                    type: number
+                    format: float
+                    example: 4500000
+                  status:
+                    type: string
+                    example: Active
+        "400":
+          description: Invalid installment data
+        "401":
+          description: Unauthorized - Missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid credentials
+        "403":
+          description: Payment unique_id is invalid
+        "404":
+          description: Loan not found
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Unauthorized:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid credentials
