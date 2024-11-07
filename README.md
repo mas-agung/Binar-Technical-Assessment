@@ -1,0 +1,4 @@
+- Penjelasan mengenai deskripsi arsitektur Bank XYZ tersedia dalam file format Markdown (md) dan PDF.
+- Contoh spesifikasi API Loan Bank XYZ dalam file DISINIAGUNG-XYZ-loan-api-1.0.0-resolved.yaml dapat anda import sebagai dokumentasi API menggunakan Swagger Editor. Anda juga dapat mengakses dan mencobanya secara langsung melalui tautan berikut ini : https://app.swaggerhub.com/apis/DISINIAGUNG/XYZ-loan-api/1.0.0#/
+
+Resource API selain registrasi akun baru dan login, hanya dapat diakses apabila pengguna sudah mendapatkan autorisasi token 'JWT'. Silakan login terlebih dahulu untuk mendapatkan token, kemudian token tersebut dapat anda masukkan dengan klik tombol 'Authorize'. Cukup sekali memasukkan variabel token anda sudah bisa mengakses API lain tanpa perlu repot memasukkannya pada header setiap dokumen.
